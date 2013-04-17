@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="js/kinetic-v4.4.3.min.js"></script>
+    <script src="js/js-extend.js"></script>
+    <script src="js/jquery-1.9.1.js"></script>
+    <script src="../../chitchat.js"></script>
+
+    <script>
+        var consumer;
+        $(document).ready(function () {
+            consumer = new ChitChat.Consumer();
+        });
+
+        function sendUnitList() {
+            var pkt = new ChitChat.Packet({type: 'c2e', who: this.name, op: 'select', message: this.selected});
+            consumer.msgCustom(pkt);
+        }
+    </script>
+
+</head>
+<body bgcolor='#330000'>
+<button onclick="sendUnitList();">Send List</button>
+<p>
+    <div id="container" style="float: left; "></div>
+</p>
+
+
+<script defer>
+    var stage = new Kinetic.Stage({
+        container: 'container',
+        width: 200,
+        height: 150,
+        color: 'white'
+    });
+
+    var layer = new Kinetic.Layer(),
+        selected = [],
+        rectangles = [],
+        selectColor = 'green',
+        unselectColor = 'red',
+        numRects = 12,
+        i;
+
+    var localFunc = function (selects) {
+        var length = selects.length,
+            i,j;
+
+        selected = [];
+
+        // make everything grey
+        for (j = 0; j < rectangles.length; j++) {
+            rectangles[j].setFill('grey');
+        }
+
+        // high light those that have been selected.
+        for (i = 0; i < length; i++) {
+            this.selected.push(selects[i]);
+
+            debugger;
+            var sq = rectangles[selects[i]];
+            sq.attrs.active = true;
+            sq.setFill('yellow');
+        }
+
+        layer.draw();
+    };
+
+    function addRectToSelected(id) {
+        selected.push(id);
+        selected.unique();
+        // sort function requires a callback to sort numerically
+        // http://www.w3schools.com/jsref/jsref_sort.asp
+        selected.sort(function(a,b){return a-b});
+    }
+
+    function removeRectToSelected(id) {
+        var loc = selected.indexOf(id);
+        selected.remove(loc);
+    }
+
+    for (i = 0; i < numRects; i++) {
+        (function () {
+
+            var group = new Kinetic.Group({
+                draggable: true
+            });
+
+            var rect = new Kinetic.Rect({
+                x: (i * 50) % 200,
+                y: 50 * Math.floor(i / 4),
+                x_ini: this.x,
+                y_ini: this.y,
+                width: 50,
+                height: 50,
+                fill: 'grey',
+                stroke: 'black',
+                strokeWidth: 1,
+                name: i,
+                active: false
+            });
+
+
+            rect.on('mousedown', function () {
+                if (this.attrs.active) {
+                    removeRectToSelected(this.attrs.name);
+                    this.setFill('grey');
+                    this.attrs.active = false;
+
+                } else {
+                    addRectToSelected(this.attrs.name);
+                    this.setFill('green');
+                    this.attrs.active = true;
+                    // sendUnitList();
+                }
+                layer.draw();
+            });
+
+            rect.on('mouseover touchstart', function () {
+                if (!this.attrs.active) {
+                    this.setFill('blue');
+                    layer.draw();
+                }
+            });
+
+            rect.on('mouseout touchend', function () {
+                if (!this.attrs.active) {
+                    debugger;
+
+                    this.setFill('grey');
+                    layer.draw();
+                }
+            });
+
+            rect.on('dblclick', function () {
+                // resetLocations();
+            });
+
+            rectangles.push(rect);
+
+            // draggable group
+            group.add(rect);
+
+            // add the shape to the layer
+            layer.add(group);
+
+            // add the layer to the stage
+            stage.add(layer);
+
+        })();
+    }
+</script> 
+</body>
+</html>

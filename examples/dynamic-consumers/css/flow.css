@@ -51,6 +51,8 @@ body {
     background-color: rgb(33, 145, 192);
     width: 204px;
     text-align: center;
+    z-index: 101;
+    position: relative;
 }
 
 .message {
@@ -73,4 +75,13 @@ a {
 .guiFrame{
     width: 198px;
     height: 180px;
+}
+
+.selectFrame {
+    width: 230px;
+    height: 210px;
+    overflow: hidden;
+    position: absolute;
+    top: 50px;
+    right: 50px;
 }

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ChitChat Provider Demo</title>
+        <link rel="stylesheet" href="css/flow.css" />
+        <link rel="stylesheet" href="css/jquery-ui.css" />
+        <link rel="stylesheet" href="css/jquery-ui.theme.css" />        
+
+        <script src="js/js-extend.js"></script>
+        <script src="js/jquery-1.9.1.js"></script>
+        <script src="js/jquery-ui.js"></script>
+        <script src="js/handlebars.js"></script>
+        <script src="../../chitchat.js"></script>
+
+        <script defer>
+            var provider = new ChitChat.Provider();
+        </script>
+
+        <script id="iframe-template" type="text/x-handlebars-template">
+            <div id="consume{{nextframe}}" class="ui-widget-content consumers">
+                <div class="ui-widget-header">Consumer{{nextframe}}</div>
+                <iframe id="frame{{nextframe}}" src="{{src}}" class="guiFrame"></iframe>
+            </div>
+        </script>
+    </head>
+    <body>
+        <div id="info">
+            Demonstration of message passing from parents to children (iframes) with the ChitChat library.
+        </div>
+        <div class="message" id="log">Messages here</div>
+        <div style="position: absolute; bottom: 30px;">
+            <a href="#" onclick="provider.createConsumer();" style="color: #000;">Create Consumer</a>
+        </div>
+
+
+        <iframe id="frame1" src="kinect-select.html" class="selectFrame"></iframe>
+        <iframe id="frame2" src="kinect-select.html" class="selectFrame" style="top: 300px"></iframe>
+
+    </body>
+</html>

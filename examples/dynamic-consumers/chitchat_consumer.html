@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ChitChat Consumer Demo</title>
+        <link rel="stylesheet" href="css/flow.css" />
+        <script src="js/js-extend.js"></script>
+        <script src="js/jquery-1.9.1.js"></script>
+        <script src="../../chitchat.min.js"></script>
+
+        <script>
+
+            var consumer;
+
+            $(document).ready(function () {
+                consumer = new ChitChat.Consumer();
+                listeners();
+
+            });
+
+            function listeners() {
+                $('#c2p').click(function () {
+                    consumer.msgParent('from consumer ' + consumer.name);
+                });
+
+                $('#c2e').click(function () {
+                    consumer.msgEveryone('from consumer ' + consumer.name + ' to all');
+                });
+
+                var select = document.getElementById('consumers');
+
+                select.addEventListener('change', consumer.onSelectChange, false);
+            }
+
+            var local = function(e) {
+
+            }
+
+        </script>
+    </head>
+    <body bgcolor="#000066">
+        <a href="#" id="c2p" class='messageLinks'>message to parent</a><br />
+        <a href="#" id="c2e" class='messageLinks'>message to consumers</a>
+        <label>Message Other Consumer
+            <select id="consumers"></select>
+        </label>
+        <div class="message" id="log">Messages</div>
+    </body>
+</html>
