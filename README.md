@@ -1,7 +1,7 @@
 ChitChat
 ========
 
-ChitChat uses the HTML5 feature 'postMessag' to communicate messages across iframes in a single window.   
+ChitChat is a lighweight simple JavaScript library that uses the HTML5 postMessage feature to communicate messages across iframes in a single window.
 
 ###ChitChat library goals:###
 1. lightweight
@@ -21,7 +21,7 @@ You'll need to initiate the provider in the parent frame.
 
 [Examples](https://github.com/cubicleDowns/ChitChat/examples/dynamic-concumers/) — [Documentation](https://github.com/cubicleDowns/ChitChat/docs/)
 
-###Provider Init###
+##Provider Init##
 ```html
 <script src="js/chitchat.min.js"></script>
 
@@ -32,7 +32,7 @@ You'll need to initiate the provider in the parent frame.
 
 Once the provider is initialized, Consumers that register to the parent will receive a response with an array of registered Consumers.  Consumers can use this for Consumer to Consumer registration.
 
-###Consumer Init###
+##Consumer Init##
 ```html
 <script src="js/chitchat.min.js"></script>
 
@@ -43,14 +43,14 @@ Once the provider is initialized, Consumers that register to the parent will rec
 
 Communication in ChitChat is defined by packets.   Packets provide a basic structure for routing and registration.   Here is an example of 
 
-###ChitChat Packet Init###
+##ChitChat Packet Init##
 ```html
 var pkt = new ChitChat.Packet({type: 'c2e', message: message});
 ```
 
 Place your JS Object onto the message parameter or extend the Packet with your own parameters.
 
-###ChitChat Packet###
+##ChitChat Packet##
 ```html
 ChitChat.Packet = function (params) {
 
