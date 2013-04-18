@@ -40,13 +40,16 @@ Communication in ChitChat is defined by packets.   Packets provide a basic struc
 
 ##ChitChat Packet Init##
 ```html
+<script>
     var pkt = new ChitChat.Packet({message: msg, target: this.sub });
+</script>
 ```
 
 Place your JS Object onto the message parameter or extend the Packet with your own parameters.
 
 ##ChitChat Packet##
 ```html
+<script>
 ChitChat.Packet = function (params) {
     this.who = params ? params.who : undefined;
 
@@ -61,4 +64,5 @@ ChitChat.Packet = function (params) {
 
     // Add additional parameters below
 };
+</script>
 ```
