@@ -17,7 +17,7 @@ You'll need to initiate the provider in the parent frame.
 
 ##Provider Init##
 ```html
-<script src="js/chitchat.min.js"></script>
+<script src="js/chitchat.js"></script>
 
 <script defer>
     var provider = new ChitChat.Provider();
@@ -28,7 +28,7 @@ Once the provider is initialized, consumers register a subscription type.   When
 
 ##Consumer Init##
 ```html
-<script src="js/chitchat.min.js"></script>
+<script src="js/chitchat.js"></script>
 
 <script defer>
    // subscribing to 'book' messages
@@ -40,7 +40,7 @@ Communication in ChitChat is defined by packets.   Packets provide a basic struc
 
 ##ChitChat Packet Init##
 ```html
-var pkt = new ChitChat.Packet({type: 'c2e', message: message});
+    var pkt = new ChitChat.Packet({message: msg, target: this.sub });
 ```
 
 Place your JS Object onto the message parameter or extend the Packet with your own parameters.
