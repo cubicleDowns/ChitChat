@@ -8,13 +8,13 @@
 
     <script>
         var consumer;
+        var subscription = '2d';
         $(document).ready(function () {
-            consumer = new ChitChat.Consumer();
+            consumer = new ChitChat.Consumer(subscription);
         });
 
         function sendUnitList() {
-            var pkt = new ChitChat.Packet({type: 'c2e', who: this.name, op: 'select', message: this.selected});
-            consumer.msgCustom(pkt);
+            consumer.sendMessage(this.selected);
         }
     </script>
 
@@ -57,7 +57,6 @@
         for (i = 0; i < length; i++) {
             this.selected.push(selects[i]);
 
-            debugger;
             var sq = rectangles[selects[i]];
             sq.attrs.active = true;
             sq.setFill('yellow');
@@ -111,7 +110,7 @@
                     addRectToSelected(this.attrs.name);
                     this.setFill('green');
                     this.attrs.active = true;
-                    // sendUnitList();
+
                 }
                 layer.draw();
             });
@@ -125,8 +124,6 @@
 
             rect.on('mouseout touchend', function () {
                 if (!this.attrs.active) {
-                    debugger;
-
                     this.setFill('grey');
                     layer.draw();
                 }

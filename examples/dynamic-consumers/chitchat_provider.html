@@ -14,6 +14,25 @@
 
         <script defer>
             var provider = new ChitChat.Provider();
+
+            demosite = 'chitchat_consumer.html';
+
+    /**
+     * Initialize an iframe consumer on the provider page.
+     * @return {[type]} [description]
+     */
+        function createConsumer () {
+
+            var source = $("#iframe-template").html(),
+                template = Handlebars.compile(source),
+                context = {nextframe: provider.consumers.length + 1, src: demosite},
+                html = template(context);
+
+            $('body').append(html);
+            $('#consume' + context.nextframe).draggable({grid: [20, 20], handle: "div"});
+
+        }
+
         </script>
 
         <script id="iframe-template" type="text/x-handlebars-template">
@@ -29,7 +48,7 @@
         </div>
         <div class="message" id="log">Messages here</div>
         <div style="position: absolute; bottom: 30px;">
-            <a href="#" onclick="provider.createConsumer();" style="color: #000;">Create Consumer</a>
+            <a href="#" onclick="createConsumer();" style="color: #000;">Create Consumer</a>
         </div>
 
 

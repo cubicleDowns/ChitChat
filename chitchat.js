@@ -17,10 +17,17 @@ ChitChat.Packet = function (params) {
 
     this.who = params ? params.who : undefined;
 
-    // types:  reg || c2p || c2c || c2e || c2f || update(consumers)
+    // types:  reg || framework
     this.type = params ? params.type : undefined;
+
+    // payload
     this.message = params ? params.message : undefined;
-    this.op = params ? params.op : undefined;
+
+    // operation type
+    // this.op = params ? params.op : undefined;
+
+    // the targeted subscription type
+    this.target = params ? params.target : 'default';
 
     // Add additional parameters below
 
@@ -44,6 +51,7 @@ ChitChat.Provider = function () {
 };
 
 ChitChat.Provider.prototype = {
+
     /**
      * Initialize
      * @return {[type]} [description]
@@ -62,106 +70,18 @@ ChitChat.Provider.prototype = {
             consumer;
 
         domFrame = $('#' + e.data.message).get(0).contentWindow;
-        consumer = { name: e.data.message, frame: domFrame, origin: e.origin };
+        consumer = { frame: domFrame, origin: e.origin, sub: e.data.target };
 
         this.consumers.push(consumer);
-
-        var consumers = this.consumers;
-
-        this.sendUpdatedConsumers();
-    },
-
-    /**
-     * Remove the iframe element.   Remove the element consumer array reference as well.
-     * @param  {[type]} name iframe ID
-     * @return {Boolean}      True if successful.
-     */
-    removeConsumer: function (name) {
-
-        var index = this.findConsumer(name),
-            consumer = (index !== -1) ? this.consumers[index] : false;
-
-        if (consumer) {
-            // removng iFrame reference from register
-            this.consumers.splice(index, 1);
-            $('#' + name).remove();
-            console.info(name + ' removed');
-            return true;
-        } else {
-            console.error(name + ' not found in provider register');
-            return false;
-        }
-    },
-
-    /**
-     * Finds the consumer object in the consumers array by name.
-     * @param  {String} name Name of the iFrame you're trying to find.
-     * @return {Object || Bool}  Returns the object or false; 
-     */
-    findConsumer: function (name) {
-        var length = this.consumers.length,
-            i;
-
-        for (i = 0; i < length; i++) {
-            if (this.consumers[i].name === name) {
-                return this.consumers[i];
-            }
-        }
-
-        return false;
-    },
-
-    /**
-     * Send a message to a single consumer.
-     * @param  {String} destination ID value of the destination frame.
-     * @param  {String} msg    Message payload.
-     * @return {[type]}        [description]
-     */
-    msgToConsumer: function (e) {
-        var consumer = this.findConsumer(e.data.who),
-            pkt = new ChitChat.Packet({who: e.data.who, message: e.data.message, type: 'c2c'});
-
-        if (consumer) {
-            consumer.frame.postMessage(pkt, consumer.origin);
-        } else {
-            console.error('Couldnt find destination consumer: ' + e.data.who);
-        }
-    },
-
-    /**
-     * Sends a message to all consumers.
-     * @param  {String} msg Message to send to everyone.
-     * @return {[type]}     [description]
-     */
-    msgToConsumers: function (e) {
-
-        // not all messages pass operations
-        var op = e.data.op || '';
-
-        var pkt = new ChitChat.Packet({type: 'c2e', message: e.data.message, op: op}),
-            length = this.consumers.length,
-            i = 0;
-
-        for (i = 0; i < length; i++) {
-            this.consumers[i].frame.postMessage(pkt, this.consumers[i].origin);
-        }
     },
 
     /**
      * Send a message to a server side object/controller
      * @return {[type]} [description]
      */
-    msgToFramework: function () {
+    msgToFramework: function (e) {
+        var pkt = new ChitChat.Packet();
 
-    },
-
-    /**
-     * Current hte parent simply logs the sent message
-     * @param  {[type]} msg [description]
-     * @return {[type]}     [description]
-     */
-    msgToParent: function (msg) {
-        $('#log').text(msg);
     },
 
     /**
@@ -169,92 +89,46 @@ ChitChat.Provider.prototype = {
      * @return {EventListener} message
      */
     listener: function () {
-        window.addEventListener('message', this.parseMessage, false);
+        window.addEventListener('message', this.routeMessage, false);
     },
 
     /**
-     * Initialize an iframe consumer on the provider page.
-     * @return {[type]} [description]
-     */
-    createConsumer: function () {
-
-        var source = $("#iframe-template").html(),
-            template = Handlebars.compile(source),
-            context = {nextframe: this.consumers.length + 1, src: this.demosite},
-            html = template(context);
-
-        $('body').append(html);
-        $('#consume' + context.nextframe).draggable({grid: [20, 20], handle: "div"});
-
-    },
-
-    /**
-     * Whenever a new consumer is added to the controller, the updated
-     * list must be sent to the consumers.  This allows consumers to specify a new destination.
-     * @return {[type]} [description]
-     */
-    sendUpdatedConsumers: function () {
-        var consumers = [],
-            length = this.consumers.length,
-            pkt = new ChitChat.Packet(),
-            i;
-
-        for (i = 0; i < length; i++) {
-            consumers.push(this.consumers[i].name);
-        }
-
-        pkt.type = 'update';
-        pkt.message = consumers;
-
-        for (i = 0; i < length; i++) {
-            this.consumers[i].frame.postMessage(pkt, this.consumers[i].origin);
-        }
-
-    },
-
-    /**
-     * Parses message from consumer and redirects appropriately
-     * @param  {Event} e Post message container.
+     * Routes a message to consumers subscripted to event target.
+     * @param  {Object} e postMessage event object.
      * @return {[type]}   [description]
      */
-    parseMessage: function (e) {
-    //reg || c2p || c2c || c2e || c2f
-        var pkt;
+    routeMessage: function (e) {
 
-        switch (e.data.type) {
-            case 'reg':
-                provider.addConsumer(e);
-                break;
-            case 'c2e':
-                provider.msgToConsumers(e);
-                break;
-            case 'c2c':
-                provider.msgToConsumer(e);
-                break;
-            case 'c2p':
-                provider.msgToParent(e.data.message);
-                break;
-            case 'c2f':
-                provider.msgToFramework(e.data.message);
-                break;
-            default:
-                console.error('Incorrect message type from consumer');
+        if (e.data.type === 'reg') {
+            provider.addConsumer(e);
+        } else if (e.data.type === 'framework') {
+
+        } else {
+            // not all messages pass operations
+            var pkt = new ChitChat.Packet({message: e.data.message}),
+                length = provider.consumers.length,
+                i = 0;
+
+            for (i = 0; i < length; i++) {
+                if (provider.consumers[i].sub === e.data.target) {
+                    provider.consumers[i].frame.postMessage(pkt, provider.consumers[i].origin);
+                }
+            }
         }
     }
 };
+
 /**
  * Creates a new postMessage consumer.
  * @class Creates a new Consumer.
  * @param {[type]} params [description]
  */
-ChitChat.Consumer = function () {
+ChitChat.Consumer = function (sub) {
 
-    //NOTE:  By default, the
+    this.sub = sub || 'default';
+
+    //NOTE:  This approach may need to change for web-workers.
     this.name = window.frameElement.id;
-    this.who = undefined;
-    this.messageBox = $('message');
-
-    this.peers = [];
 
     this.init();
 
@@ -268,83 +142,47 @@ ChitChat.Consumer.prototype = {
      */
     init: function () {
         this.listeners();
-        this.registerWithProvider();
+        this.register();
     },
 
-    updateConsumerList: function (peers) {
-        var length = peers.length,
-            i;
-        this.peers = peers;
-
-        $('#consumers').empty();
-
-        for (i = 0; i < length; i++) {
-            $('#consumers').append($('<option></option>').attr("value", peers[i]).text(peers[i]));
-        }
-
+    /**
+     * Register this consumer and subscription.
+     * @return {[type]} [description]
+     */
+    register: function () {
+        var pkt = new ChitChat.Packet({type: 'reg', message: window.frameElement.id, target: this.sub});
+        window.parent.postMessage(pkt, 'http://localhost');
     },
 
-    registerWithProvider: function () {
-        var pkt = new ChitChat.Packet({type: 'reg', message: window.frameElement.id});
-        this.sendMessage(pkt);
-    },
-
+    /**
+     * Sends postMessage
+     * @param  {String} msg Message for target subscriptors.
+     * @return {[type]}     [description]
+     */
     sendMessage: function (msg) {
-        window.parent.postMessage(msg, 'http://localhost');
+        var pkt = new ChitChat.Packet({message: msg, target: this.sub });
+        window.parent.postMessage(pkt, 'http://localhost');
     },
 
-    //c2e
-    msgEveryone: function (message) {
-        var pkt = new ChitChat.Packet({type: 'c2e', message: message});
-        this.sendMessage(pkt);
-    },
-
-    msgCustom: function (pkt) {
-        this.sendMessage(pkt);
-    },
-
-    // c2f
-    msgFramework: function (message) {
-        var pkt = new ChitChat.Packet({type: 'c2f', message: message});
-        this.sendMessage(pkt);
-    },
-
-    //c2c
-    msgConsumer: function (consumerId, message) {
-        var pkt = new ChitChat.Packet({type: 'c2c', who: consumerId, message: message});
-        this.sendMessage(pkt);
-    },
-
-    msgParent: function (message) {
-        var pkt = new ChitChat.Packet();
-        pkt.type = 'c2p';
-        pkt.message = message;
-        this.sendMessage(pkt);
-    },
-
+    /**
+     * Event listener for postMessage
+     * @return {[type]} [description]
+     */
     listeners: function () {
         window.addEventListener('message', this.getParentMessage, false);
     },
 
-    onSelectChange: function () {
-        var dest = $('#consumers option:selected').text();
-        consumer.msgConsumer(dest, 'msg from ' + consumer.name);
-    },
-
+    /**
+     * Gets postMessage and calls local function to handle message
+     * @param  {Object} e postMessage event object
+     * @return {[type]}   [description]
+     */
     getParentMessage: function (e) {
-        if (e.data.type === 'update') {
-            $('#log').text('parent update received');
-            consumer.updateConsumerList(e.data.message);
-        } else if (e.data.op === 'select') {
-            // calls local function
-            $('#log').text(e.data.message);
 
-            if (typeof localFunc == 'function') {
-                localFunc(e.data.message);
-            }
-
+        if (typeof localFunc === 'function') {
+            localFunc(e.data.message);
         } else {
-            $('#log').text(e.data.message);
+            console.error('no local func defined on end point');
         }
     }
 };
