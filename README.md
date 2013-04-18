@@ -6,7 +6,8 @@ ChitChat is a lighweight simple JavaScript library that uses the HTML5 postMessa
 ###ChitChat library goals:###
 1. lightweight
 2. consumers can self-register with provider
-3. consumers can subscribe to a single broadcast type.
+3. consumers can subscribe to a single broadcast type
+4. At the consumer, the message listening function passes the message to a local function.   Aptly called, localFunc.
 
 Download the [minified library]() and include it in your html.
 
